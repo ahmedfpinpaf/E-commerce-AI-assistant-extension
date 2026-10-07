@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopAI - Extension Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="options-container">
+    <!-- Header -->
+    <header class="options-header">
+      <div class="brand">
+        <div class="brand-logo">⚡</div>
+        <div class="brand-info">
+          <h1>ShopAI Settings</h1>
+          <p>Configure price-drop alerts, notification channels, and tracking preferences</p>
+        </div>
+      </div>
+      <div class="server-badge" id="server-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Checking backend...</span>
+      </div>
+    </header>
+
+    <form id="options-form" class="options-form">
+
+      <!-- 1. ALERT SETTINGS -->
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">🔔</span>
+          <div class="card-header-text">
+            <h2>Alert Settings</h2>
+            <p>Define conditions for when ShopAI should alert you about price drops</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Price Drop Alerts ON/OFF -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <label for="opt-price-drop-alerts" class="setting-title">Price Drop Alerts</label>
+              <span class="setting-desc">Enable automated alerts whenever a product price decreases</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="opt-price-drop-alerts" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- Tracked Products Alerts ON/OFF -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <label for="opt-tracked-alerts-enabled" class="setting-title">Tracked Products Alerts</label>
+              <span class="setting-desc">Enable background price monitoring for all items in your tracking list</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="opt-tracked-alerts-enabled" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- Min Drop Percentage -->
+          <div class="form-field">
+            <label for="opt-min-drop-pct">Minimum Price Drop Percentage</label>
+            <select id="opt-min-drop-pct" class="select-input">
+              <option value="any">Any Price Drop (&gt; 0%)</option>
+              <option value="5" selected>5% Price Drop</option>
+              <option value="10">10% Price Drop</option>
+              <option value="15">15% Price Drop</option>
+              <option value="20">20% Price Drop</option>
+              <option value="25">25% Price Drop</option>
+            </select>
+            <span class="field-hint">Only alert if the price reduction is at least this percentage.</span>
+          </div>
+
+          <!-- Min Drop Amount -->
+          <div class="form-field">
+            <label for="opt-min-drop-amount">Minimum Price Drop Amount (Optional)</label>
+            <input type="number" id="opt-min-drop-amount" placeholder="e.g. 500 (in local currency)" step="any">
+            <span class="field-hint">Ignore negligible price drops below this absolute amount.</span>
+          </div>
+
+          <!-- Alert Frequency -->
+          <div class="form-field">
+            <label for="opt-alert-frequency">Alert Frequency</label>
+            <select id="opt-alert-frequency" class="select-input">
+              <option value="immediately" selected>Immediately (as detected by scheduler)</option>
+              <option value="daily">Daily Digest</option>
+              <option value="weekly">Weekly Summary</option>
+            </select>
+            <span class="field-hint">How often alerts should be compiled and dispatched.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. NOTIFICATION SETTINGS -->
+      <section class="card">
+        <div class="card-header">
+          <span class="card-icon">📬</span>
+          <div class="card-header-text">
+            <h2>Notification Settings</h2>
+            <p>Manage notification channels and email alert delivery</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Browser Notifications ON/OFF -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <label for="opt-browser-notifications" class="setting-title">Browser Notifications</label>
+              <span class="setting-desc">Display desktop popups when price drops occur</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="opt-browser-notifications" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- Email Notifications ON/OFF -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <label for="opt-email-notifications" class="setting-title">Email Notifications</label>
+              <span class="setting-desc">Send automated HTML alert emails via backend SMTP</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="opt-email-notifications" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <!-- Email Address -->
+          <div class="form-field">
+            <label for="opt-alert-email">Notification Email Address *</label>
+            <input type="email" id="opt-alert-email" required placeholder="user@example.com">
+            <span class="field-hint">Recipient email for price drops and tracking reports.</span>
+          </div>
+
+          <!-- Email Alert Preferences -->
+          <div class="form-field">
+            <label for="opt-email-pref">Email Alert Preferences</label>
+            <select id="opt-email-pref" class="select-input">
+              <option value="all" selected>All qualifying price drops</option>
+              <option value="target_only">Only when target alert price is met</option>
+              <option value="major_drops">Major drops (&ge; 10%) only</option>
+            </select>
+          </div>
+
+          <!-- Backend Server URL -->
+          <div class="form-field">
+            <label for="opt-api-url">Backend Server URL</label>
+            <input type="url" id="opt-api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+            <span class="field-hint">URL of your running FastAPI e-commerce tracker backend.</span>
+          </div>
+
+          <!-- Test Email Alert -->
+          <div class="test-email-action">
+            <button type="button" class="btn btn-outline" id="btn-test-email">
+              <span>✉️</span> Send Test Email Alert
+            </button>
+            <div id="test-email-msg" class="alert-box hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Save Bar -->
+      <div class="options-actions">
+        <button type="submit" class="btn btn-primary" id="btn-save">
+          <span>💾</span> Save All Settings
+        </button>
+        <span id="save-status-msg" class="save-status hidden">Settings saved!</span>
+      </div>
+
+    </form>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

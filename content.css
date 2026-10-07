@@ -1,0 +1,95 @@
+/* ShopAI Content Styles - Floating Badge and Toast Overlay */
+
+.shopai-quick-badge {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483640;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.shopai-quick-badge:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 28px -4px rgba(37, 99, 235, 0.55);
+}
+
+.shopai-quick-badge.shopai-badge-active {
+  background: linear-gradient(135deg, #065f46 0%, #059669 100%);
+}
+
+.shopai-badge-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shopai-badge-icon {
+  font-size: 14px;
+}
+
+.shopai-badge-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 0 0 8px;
+  margin-left: 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+}
+
+.shopai-badge-close:hover {
+  color: #ffffff;
+}
+
+/* Floating Toast Notification */
+.shopai-toast {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 380px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shopai-toast.shopai-toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.shopai-toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.shopai-toast-body b {
+  color: #60a5fa;
+}

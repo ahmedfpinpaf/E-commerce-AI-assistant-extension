@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopAI - Price Tracker & Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">⚡</div>
+      <div class="brand-info">
+        <span class="brand-title">ShopAI</span>
+        <span class="brand-tagline">Price Tracker & Assistant</span>
+      </div>
+    </div>
+    <div class="server-status" id="server-status" title="Connecting to backend...">
+      <span class="status-dot"></span>
+      <span class="status-text" id="status-text">Connecting...</span>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs (3 Main Sections) -->
+  <nav class="app-nav">
+    <button class="nav-tab active" data-tab="assistant">
+      <span class="nav-icon">🤖</span>
+      <span class="nav-label">Assistant</span>
+    </button>
+    <button class="nav-tab" data-tab="tracked">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Tracked</span>
+      <span class="nav-badge" id="tracked-count-badge">0</span>
+    </button>
+    <button class="nav-tab" data-tab="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="app-main">
+
+    <!-- TAB 1: MAIN EXTENSION / ASSISTANT (Product Assistant, Detection & Chatbot) -->
+    <section class="tab-panel active" id="panel-assistant">
+      
+      <!-- Scanning State -->
+      <div id="detection-loading" class="state-card loading-card">
+        <div class="spinner"></div>
+        <p>Scanning active webpage for product details...</p>
+      </div>
+
+      <!-- Multi-Product Selection Card (when page contains multiple items) -->
+      <div id="multi-product-card" class="multi-product-card hidden">
+        <div class="multi-header">
+          <span class="multi-icon">📦</span>
+          <div class="multi-header-text">
+            <b>Multiple Products on Page</b>
+            <span>Select ONE product to track:</span>
+          </div>
+        </div>
+        <select id="multi-product-select" class="custom-select"></select>
+        <button type="button" class="btn btn-primary w-full mt-2" id="btn-select-product">
+          Select This Product
+        </button>
+      </div>
+
+      <!-- Dedicated Product Tracking Card (Shows ONLY the exact tracked product) -->
+      <div id="dedicated-tracking-card" class="dedicated-tracking-card hidden">
+        <div class="dedicated-card-header">
+          <span class="tracking-badge-icon">⚡</span>
+          <span class="tracking-card-title">Currently Tracking</span>
+        </div>
+        <div class="dedicated-card-body">
+          <div class="dedicated-media-row">
+            <img class="dedicated-thumb" id="dedicated-product-image" src="icons/icon48.png" alt="Product Image" onerror="this.src='icons/icon48.png'">
+            <div class="dedicated-title-meta">
+              <h3 class="dedicated-product-name" id="dedicated-product-name">Product Name</h3>
+              <div class="dedicated-badges-row">
+                <span class="store-badge" id="dedicated-website">Store</span>
+                <span class="brand-badge" id="dedicated-brand-model" style="display:none;"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dedicated-details-grid">
+            <div class="detail-row">
+              <span class="detail-label">Current Price:</span>
+              <span class="detail-val font-bold" id="dedicated-current-price">$0.00</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Previous Price:</span>
+              <span class="detail-val" id="dedicated-previous-price">$0.00</span>
+            </div>
+            <div class="detail-row" id="dedicated-price-change-row">
+              <span class="detail-label">Price Change:</span>
+              <span class="detail-val" id="dedicated-price-change">None (0%)</span>
+            </div>
+            <div class="detail-row" id="dedicated-target-price-row">
+              <span class="detail-label">Target Price:</span>
+              <span class="detail-val" id="dedicated-target-price">None</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Tracking Status:</span>
+              <span class="detail-val status-pill" id="dedicated-status">🟢 Tracking</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Last Checked:</span>
+              <span class="detail-val" id="dedicated-last-checked">Just now</span>
+            </div>
+          </div>
+
+          <div id="dedicated-unavailable-banner" class="unavailable-banner hidden">
+            ⚠️ The tracked product is currently unavailable or could not be found.
+          </div>
+
+          <div class="dedicated-actions">
+            <a href="#" target="_blank" class="btn btn-outline btn-sm" id="btn-dedicated-view">View Product</a>
+            <button type="button" class="btn btn-danger btn-sm" id="btn-dedicated-stop">Stop Tracking</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detected Product Card -->
+      <div id="product-card" class="product-card hidden">
+        <div class="product-card-header">
+          <div class="store-badge" id="product-store">Store</div>
+          <div class="tracked-indicator hidden" id="already-tracked-indicator">✓ Tracked</div>
+        </div>
+
+        <div class="product-media-row">
+          <div class="product-image-wrap">
+            <img id="product-image" src="" alt="Product Image" onerror="this.src='icons/icon48.png'">
+          </div>
+          <div class="product-meta">
+            <h3 class="product-title" id="product-title">Product Title</h3>
+            <div class="product-tags">
+              <span class="tag" id="product-brand" style="display:none;"></span>
+              <span class="tag" id="product-model" style="display:none;"></span>
+            </div>
+            <div class="product-price-box">
+              <span class="price-label">Price:</span>
+              <span class="product-price" id="product-price">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tracking Form Controls -->
+        <div class="track-actions-box">
+          <div class="form-group">
+            <div class="input-with-prefix">
+              <span class="input-prefix" id="currency-prefix">PKR</span>
+              <input type="number" id="target-price-input" placeholder="Target alert price (optional)" step="any">
+            </div>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-primary" id="btn-track-product">
+              <span class="btn-icon">⚡</span>
+              <span id="btn-track-text">Track This Product</span>
+            </button>
+            <button class="btn btn-secondary hidden" id="btn-stop-tracking">
+              <span class="btn-icon">🛑</span>
+              <span>Stop</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fallback when no product detected -->
+      <div id="no-product-card" class="state-card info-card compact-card hidden">
+        <div class="no-prod-row">
+          <span class="state-icon-sm">🔍</span>
+          <div class="no-prod-text">
+            <b>No product detected on this tab.</b>
+            <span>Open Daraz, Amazon, OLX, eBay, or chat with AI below.</span>
+          </div>
+        </div>
+
+        <details class="manual-track-details">
+          <summary><b>+ Track Product Manually</b></summary>
+          <form id="manual-track-form" class="manual-form">
+            <div class="form-group">
+              <input type="text" id="manual-name" required placeholder="Product Name *">
+            </div>
+            <div class="form-group">
+              <input type="url" id="manual-url" required placeholder="Product URL *">
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <input type="number" id="manual-price" required placeholder="Price *" step="any">
+              </div>
+              <div class="form-group flex-1">
+                <select id="manual-currency">
+                  <option value="PKR">PKR</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <input type="number" id="manual-target" placeholder="Target Alert Price (Optional)" step="any">
+            </div>
+            <button type="submit" class="btn btn-primary w-full">Save & Start Tracking</button>
+          </form>
+        </details>
+      </div>
+
+      <!-- AI Chatbot Section (Main Extension Assistant) -->
+      <div class="assistant-chat-container">
+        <div class="chat-context-banner" id="chat-context-banner">
+          <span class="context-icon">💡</span>
+          <span class="context-text" id="chat-context-text">Context: General browsing</span>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Quick Action Chips -->
+        <div class="quick-chips" id="quick-chips">
+          <button class="chip" data-msg="What is this product?">What is this?</button>
+          <button class="chip" data-msg="Track this product">Track product</button>
+          <button class="chip" data-msg="Show tracked products">Show tracked</button>
+          <button class="chip" data-msg="Recommend a laptop for programming">Recommend laptop</button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <form class="chat-input-bar" id="chat-form">
+          <input type="text" id="chat-input" placeholder="Ask AI assistant or say 'Track this'..." autocomplete="off">
+          <button type="submit" class="btn-send" id="btn-chat-send" title="Send message">
+            <span>➤</span>
+          </button>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- TAB 2: TRACKED PRODUCTS (Products Being Monitored) -->
+    <section class="tab-panel" id="panel-tracked">
+      <div class="dashboard-header">
+        <div class="dashboard-title-row">
+          <span class="dashboard-title">Monitored Products</span>
+          <button class="btn btn-sm btn-outline" id="btn-refresh-all" title="Check latest prices for all items">
+            <span class="btn-icon">🔄</span> Check All
+          </button>
+        </div>
+        <input type="text" id="tracked-search-input" placeholder="Search tracked items..." class="search-input">
+      </div>
+
+      <div id="tracked-items-list" class="tracked-items-list">
+        <!-- Rendered dynamically via popup.js -->
+      </div>
+
+      <div id="tracked-empty-state" class="state-card empty-card hidden">
+        <div class="state-icon">📦</div>
+        <h3>No Products Monitored</h3>
+        <p>You are not tracking any products yet. Browse any e-commerce page and click "Track This Product" or ask the AI assistant!</p>
+      </div>
+    </section>
+
+    <!-- TAB 3: SETTINGS (CLEAN & FOCUSED ONLY ON ALERT AND NOTIFICATION SETTINGS) -->
+    <section class="tab-panel" id="panel-settings">
+      <form id="settings-form" class="settings-page-container">
+
+        <!-- 1. ALERT SETTINGS -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-icon">🔔</span>
+            <div class="settings-card-title-group">
+              <h3>Alert Settings</h3>
+              <p>Configure price-drop triggers and tracking thresholds</p>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <!-- Price Drop Alerts ON/OFF -->
+            <div class="settings-toggle-row">
+              <div class="toggle-meta">
+                <label for="setting-price-drop-alerts" class="setting-label">Price Drop Alerts</label>
+                <span class="setting-hint">Trigger alerts whenever product prices decrease</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setting-price-drop-alerts" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <!-- Tracked Products Alerts ON/OFF -->
+            <div class="settings-toggle-row">
+              <div class="toggle-meta">
+                <label for="setting-tracked-alerts-enabled" class="setting-label">Tracked Products Alerts</label>
+                <span class="setting-hint">Enable automatic price monitoring for tracked items</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setting-tracked-alerts-enabled" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <!-- Minimum Price Drop Percentage -->
+            <div class="form-group">
+              <label for="setting-min-drop-pct">Minimum Price Drop Percentage</label>
+              <select id="setting-min-drop-pct" class="custom-select">
+                <option value="any">Any Price Drop (&gt; 0%)</option>
+                <option value="5" selected>5% Price Drop</option>
+                <option value="10">10% Price Drop</option>
+                <option value="15">15% Price Drop</option>
+                <option value="20">20% Price Drop</option>
+                <option value="25">25% Price Drop</option>
+              </select>
+              <span class="form-hint">Only alert if the price drops by at least this percentage.</span>
+            </div>
+
+            <!-- Minimum Price Drop Threshold Amount -->
+            <div class="form-group">
+              <label for="setting-min-drop-amount">Minimum Price Drop Amount</label>
+              <input type="number" id="setting-min-drop-amount" placeholder="e.g. 500 (PKR or store currency)" step="any">
+              <span class="form-hint">Ignore negligible drops smaller than this absolute amount.</span>
+            </div>
+
+            <!-- Alert Frequency -->
+            <div class="form-group">
+              <label for="setting-alert-frequency">Alert Frequency</label>
+              <select id="setting-alert-frequency" class="custom-select">
+                <option value="immediately" selected>Immediately (as detected)</option>
+                <option value="daily">Daily Digest</option>
+                <option value="weekly">Weekly Summary</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. NOTIFICATION SETTINGS -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <span class="settings-card-icon">📬</span>
+            <div class="settings-card-title-group">
+              <h3>Notification Settings</h3>
+              <p>Configure notification channels and recipient details</p>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <!-- Browser Notifications ON/OFF -->
+            <div class="settings-toggle-row">
+              <div class="toggle-meta">
+                <label for="setting-browser-notifications" class="setting-label">Browser Notifications</label>
+                <span class="setting-hint">Show instant desktop alerts in your browser</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setting-browser-notifications" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <!-- Email Notifications ON/OFF -->
+            <div class="settings-toggle-row">
+              <div class="toggle-meta">
+                <label for="setting-email-notifications" class="setting-label">Email Notifications</label>
+                <span class="setting-hint">Dispatch HTML price-drop alert emails via SMTP</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="setting-email-notifications" checked>
+                <span class="slider round"></span>
+              </label>
+            </div>
+
+            <!-- User Email Address -->
+            <div class="form-group">
+              <label for="setting-alert-email">Email Address *</label>
+              <input type="email" id="setting-alert-email" required placeholder="user@example.com">
+              <span class="form-hint">Destination address for all price-drop notifications.</span>
+            </div>
+
+            <!-- Email Alert Preferences -->
+            <div class="form-group">
+              <label for="setting-email-pref">Email Alert Preferences</label>
+              <select id="setting-email-pref" class="custom-select">
+                <option value="all" selected>All qualifying price drops</option>
+                <option value="target_only">Only when target price is reached</option>
+                <option value="major_drops">Major drops (&ge; 10%) only</option>
+              </select>
+            </div>
+
+            <!-- Backend Server URL -->
+            <div class="form-group">
+              <label for="setting-api-url">Backend Server URL</label>
+              <input type="url" id="setting-api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+            </div>
+
+            <!-- Test Email Button -->
+            <div class="form-group">
+              <button type="button" class="btn btn-outline w-full" id="btn-send-test-email">
+                <span>✉️</span> Send Test Email Alert
+              </button>
+              <div id="test-email-status" class="status-box hidden"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="settings-save-bar">
+          <button type="submit" class="btn btn-primary w-full" id="btn-save-settings">
+            <span>💾</span> Save Settings
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+  </main>
+
+  <!-- Global Toast / Alert -->
+  <div id="popup-toast" class="popup-toast hidden"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
